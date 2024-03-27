@@ -7,7 +7,7 @@ const errorHandler =require('./controllers/errorController')
 //i should move this to server.js watch environment variables section 6 for more details 
 dotenv.config({path:'./config.env'})
 const PORT=process.env.PORT;
-mongoose.connect('mongodb://localhost:27017/TeamProject').then(()=>{
+mongoose.connect(process.env.MONGODB_URL).then(()=>{
     app.listen(PORT,console.log(`listening to PORT ${PORT}`))
 })
 
