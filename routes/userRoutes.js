@@ -7,9 +7,11 @@ const userController=require('../controllers/userController');
 
 router.post('/signup',authController.signup);
 router.post('/login',authController.login);
+router.post('/forgetPassword',authController.forgetPassword);
+router.post('/resetPassword/:token',authController.resetPassword);
 
 
-router.get('/users/:id',authController.protect,userController.getById);
+router.get('/:id',authController.protect,authController.restrictTo('admin'),userController.getById);
 router.all('*',(req,res,next)=>{
     next(new Errors(`can't find ${req.originalUrl} on server`,404));
 });

@@ -3,6 +3,7 @@ const userModel=require('../models/User');
 const Errors = require('../util/Errors');
 const catchAsync=require('../util/catchAsync')
 const jwt= require('jsonwebtoken');
+const sendEmail=require('../util/email');
 
 const generateToken= (userId,userEmail)=>{
     return jwt.sign({id: userId,email: userEmail},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXPIRES_IN});
@@ -19,6 +20,7 @@ exports.signup= catchAsync(async (req,res,next)=>{
     const newUser= await userModel.create({
         email: userEmail,
         password: req.body.password,
+        role: req.body.role
     });
         //?await
 
@@ -83,3 +85,46 @@ exports.protect=catchAsync(async (req,res,next)=>{
     req.user=user;
     next();
 })
+
+exports.restrictTo = (...roles)=>{
+    return (req,res,next)=>{
+        if(!roles.includes(req.user.role)){
+            return next(new Errors('You do not have premission to do this action',401));
+        }
+        next();
+    }
+    
+}
+
+exports.forgetPassword = catchAsync(async(req,res,next)=>{
+    // get the user
+    const user= await userModel.findOne({email:req.body.email});
+    if(!user)
+        return next(new Errors('there is no user with this email.',404));
+    // generate random token
+    const resetToken=user.generatePasswordResetToken();
+    await user.save({validateBeforeSave:false});
+    //send the random token to user
+    const resetURL = `${req.protocol}://${req.get('host')}/users/resetPassword/${resetToken}`;
+
+    const message=`Did you forget your password?click the following link to reset your password:\n${resetURL} \nif you didn't please ignore this email`;
+
+try{
+    await sendEmail({
+        email: user.email,
+        subject: '8Bit reset your password (valid for 10 min)',
+        message
+    })
+    res.status(200).json({
+        message: 'Token sent to email'
+    })
+}catch(err){
+    user.passwordResetToken=undefined;
+    user.passwordResetExpiresIn=undefined;
+    await user.save({validateBeforeSave:false});
+    next(new Errors('Error occured when sending email to reset password',500));
+
+}
+})
+exports.resetPassword = (req,res,next)=>{}
+
