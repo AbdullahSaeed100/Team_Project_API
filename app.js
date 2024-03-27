@@ -7,7 +7,9 @@ const errorHandler =require('./controllers/errorController')
 //i should move this to server.js watch environment variables section 6 for more details 
 dotenv.config({path:'./config.env'})
 const PORT=process.env.PORT;
-
+mongoose.connect('mongodb://localhost:27017/TeamProject').then(()=>{
+    app.listen(PORT,console.log(`listening to PORT ${PORT}`))
+})
 
 const app=new express();
 
@@ -29,9 +31,7 @@ app.all('*',(req,res,next)=>{
 
 app.use(errorHandler);
 
-mongoose.connect('mongodb://localhost:27017/TeamProject').then(()=>{
-    app.listen(PORT,console.log(`listening to PORT ${PORT}`))
-})
+
 
 
 module.exports=app;

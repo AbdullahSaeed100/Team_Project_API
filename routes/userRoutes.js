@@ -4,7 +4,6 @@ const Errors= require('../util/Errors');
 
 const authController=require('../controllers/authController');
 const userController=require('../controllers/userController');
-const checkExist= require('../util/checkExist');
 
 router.post('/signup',authController.signup);
 router.post('/login',authController.login);
