@@ -1,3 +1,4 @@
+const crypto=require('crypto');
 const { promisify }=require('util');
 const userModel=require('../models/User');
 const Errors = require('../util/Errors');
@@ -123,8 +124,33 @@ try{
     user.passwordResetExpiresIn=undefined;
     await user.save({validateBeforeSave:false});
     next(new Errors('Error occured when sending email to reset password',500));
-
+    
 }
 })
-exports.resetPassword = (req,res,next)=>{}
+exports.resetPassword = catchAsync(async(req,res,next)=>{
+    //1 getting user by token
+    const hashedUser=crypto.createHash('Sha256').update(req.params.token).digest('hex');
+
+    const user= await userModel.findOne({passwordResetToken:hashedUser,passwordResetExpiresIn:{$gt:Date.now()}});
+
+    //2 set new password if the token is correct and did not expire
+    if(!user){
+        return next(new Errors('user token is not correct or has expired.'))
+    }
+
+    user.password=req.body.password;
+    user.passwordResetToken=undefined;
+    user.passwordResetExpiresIn=undefined;
+    await user.save();
+
+    //3 update changePasswordAt this is done in userSchema.pre('save' function) in user model.
+
+    //4 log user in , generate token and send it
+    const token=generateToken(user._id,user.email);
+
+    res.status(201).json({
+        token
+    })
+
+})
 

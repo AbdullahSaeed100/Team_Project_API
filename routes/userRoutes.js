@@ -8,7 +8,7 @@ const userController=require('../controllers/userController');
 router.post('/signup',authController.signup);
 router.post('/login',authController.login);
 router.post('/forgetPassword',authController.forgetPassword);
-router.post('/resetPassword/:token',authController.resetPassword);
+router.patch('/resetPassword/:token',authController.resetPassword);
 
 
 router.get('/:id',authController.protect,authController.restrictTo('admin'),userController.getById);

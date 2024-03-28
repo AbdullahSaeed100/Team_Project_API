@@ -8,7 +8,7 @@ const errorHandler =require('./controllers/errorController')
 dotenv.config({path:'./config.env'})
 const PORT=process.env.PORT;
 mongoose.connect(process.env.MONGODB_URL).then(()=>{
-    app.listen(PORT,console.log(`listening to PORT ${PORT}`))
+    app.listen(PORT,console.log(`connected to MongoDB`))
 })
 
 const app=new express();

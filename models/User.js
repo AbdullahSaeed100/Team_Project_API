@@ -77,6 +77,11 @@ userSchema.pre('save',async function (next){
     this.password= await bcrypt.hash(this.password,12);
     //no need for confirm password anymore
     //this.confirmPassword=undefined;
+});
+userSchema.pre('save',function (next){
+    if(!this.isModified('password') || this.isNew)return next();
+    this.passwordChangeAt=Date.now()-1000;
+    next();
 })
 userSchema.methods.correctPassword= async function (enteredPassword,realPassword){
     return await bcrypt.compare(enteredPassword,realPassword);
